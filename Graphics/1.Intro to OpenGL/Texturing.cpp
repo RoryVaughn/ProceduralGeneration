@@ -52,7 +52,8 @@ void Texturing::texture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 
 	/*int imageWidth = 512, imageHeight = 512, imageFormat = 0;
 	unsigned char* data = stbi_load("./textures/reform.jpg",
@@ -117,18 +118,50 @@ bool Texturing::generateGrid()
 		0, 1, 2,
 		2, 3, 0,
 	};*/
-
-	Vertex vertexData[]{
-		//x  y   z  w  u  v
-		{-5, 0, 5, 1, 0, 1},//tl
-		{5, 0, 5, 1, 1, 1}, //tr
-		{5, 0, -5, 1, 1, 0},// br
-		{-5, 0, -5, 1, 0, 0},//bl
-	};
-	unsigned int indexData[] {
-		0, 1, 2,
-		2, 3, 0,
-	};
+		Vertex* vertexData = new Vertex[64];
+		unsigned int* indexData = new unsigned int[64];
+		vertexData = new Vertex[64];
+		indexData = new unsigned int[64];
+		int p = 0;
+		for (float row = 0; row < 4; row++)
+		{
+			for (float column = 0; column < 4; column++)
+			{
+				//x  y   z  w  u  v
+				vertexData[p] = {-5 + (10 * column), 0, 5 + (10 * row), 1, 0 + column, 1 + row };//tl
+				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
+				p++;
+				vertexData[p] = { 5 + (10 * column), 0, 5 + (10 * row), 1, 1 + column, 1 + row }; //tr
+				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
+				p++;
+				vertexData[p] = { 5 + (10 * column), 0,-5 + (10 * row), 1, 1 + (10 * column), 0 + row };// br
+				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
+				p++;
+				vertexData[p] = {-5 + (10 * column), 0,-5 + (10 * row), 1, 0 + (10 * column), 0 + row };//bl
+				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
+				//std::cout << std::endl;
+				p++;
+			}
+		}
+		unsigned int l = 0;
+		for (unsigned int j = 0; j < 4; j++)
+		{
+			l = j * 6;
+			indexData[l] =  l ;
+			l++;
+			indexData[l] =  l ;
+			l++;
+			indexData[l] =  l ;
+			l++;
+			indexData[l] =  l - 1 ;
+			l++;
+			indexData[l] =  l - 1 ;
+			l++;
+			indexData[l] =  l - 5;
+		}
+		
+			
+		
 
 	
 		
@@ -178,8 +211,8 @@ bool Texturing::CreateShader()
 							uniform sampler2D perlin_texture; \
 							void main() {vec4 pos = position; \
 							frag_texcoord = texcoord; \
-							gl_Position = view_proj * pos;}";
-							//pos.y += texture(perlin_texture, texcoord).r * 5; \
+							gl_Position = view_proj * pos; \
+							pos.y += texture(perlin_texture, texcoord).r * 5;}";
 							
 
 	const char* fsSource = "#version 410\n \
@@ -262,7 +295,7 @@ void Texturing::draw() {
 	// draw
 	glPointSize(5.0f);
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_LINES, 64, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_POINTS, 64, GL_UNSIGNED_INT, nullptr);
 }
 
 void Texturing::inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {

@@ -45,5 +45,4 @@ private:
 	unsigned int m_IBO;
 	unsigned int m_programID;
 	unsigned int m_texture, m_perlin_texture;
-	unsigned int m_indices[];
 };
