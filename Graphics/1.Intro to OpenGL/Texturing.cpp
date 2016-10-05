@@ -72,36 +72,32 @@ bool Texturing::generateGrid()
 			for (int column = 0; column < vcol; ++column)
 			{
 				//x  y   z  w  u  v
-				vertexData[row * vcol + column].position = vec4(column - vcol * 0.5f , 0, row - vrow * 0.5f , 1);
-				vertexData[row * vcol + column].texcoord = vec2(column * (1.0f / vcol), row * (1.0f / vrow));
+				vertexData[p].position = vec4(column - vcol * 0.5f , 0, row - vrow * 0.5f , 1);
+				vertexData[p].texcoord = vec2(column * (1.0f / vcol), row * (1.0f / vrow));
+				p++;//row * vcol + column
 			}
 
 		}
 		m_count = (vrow - 1) * (vcol - 1) * 6;
 		unsigned int* indexData = new unsigned int[m_count];
 		unsigned int l = 0;
-		for (unsigned int j = 0; j < (vrow-1) * (vcol-1); ++j)
+		int m = 0;
+		for ( int j = 0; j < (vrow-1) * (vcol-1); ++j)
 		{
+			m = 6 * j;
+			indexData[l++] =  m;
 
-			indexData[l] =  j;
-			l++;
-			indexData[l] =  j + 1;
-			l++;
-			indexData[l] =  j + 2;
-			l++;
-			indexData[l] =  j ;
-			l++;
-			indexData[l] =  j + 2 ;
-			l++;
-			indexData[l] =  j + 3;
-			l++;
+			indexData[l++] =  m + 1;
+
+			indexData[l++] =  m + 2;
+			/////////////////////////////////////////////
+			indexData[l++] =  m + 3;
+
+			indexData[l++] =  m + 4 ;
+
+			indexData[l++] =  m  + 5;
 		}
-		
-			
-		
 
-	
-		
 
 	// create and bind buffers to a vertex array object
 	glGenVertexArrays(1, &m_VAO);
@@ -123,14 +119,6 @@ bool Texturing::generateGrid()
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE,		sizeof(Vertex), 0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,		sizeof(Vertex), ((char*)0) +  16);
-	
-	
-	/*glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE,		sizeof(Vertex), ((char*)0) + 16);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE,		sizeof(Vertex), ((char*)0) + 32);*/
-
-
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -216,23 +204,19 @@ void Texturing::draw() {
 	// use our texture program
 	glUseProgram(m_programID);
 	// bind the camera
-	int loc0 = glGetUniformLocation(m_programID, "view_proj");
-	glUniformMatrix4fv(loc0, 1, GL_FALSE, &(m_camera->getProjectionView()[0][0]));
+	int loc = glGetUniformLocation(m_programID, "view_proj");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, &(m_camera->getProjectionView()[0][0]));
 	//// set texture slots
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, m_texture);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
 	// tell the shader where it is
-	//int loc1 = glGetUniformLocation(m_programID, "texture");
-	//glUniform1i(loc1, 0);
 	int loc2 = glGetUniformLocation(m_programID, "perlin_texture");
-	glUniform1i(loc2, 0);
+	glUniform1i(loc2, 1);
 	// bind the light
 	// draw
 	glPointSize(5.0f);
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_POINTS, m_vertNum, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, m_vertNum, GL_UNSIGNED_INT, nullptr);
 }
 
 void Texturing::inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
