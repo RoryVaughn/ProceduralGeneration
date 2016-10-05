@@ -8,7 +8,7 @@
 #include "Camera.h"
 #include <iostream>
 #include <stb_image.h>
-
+using glm::vec2;
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
@@ -25,7 +25,7 @@ Texturing::~Texturing() {
 
 void Texturing::texture()
 {
-	/*int dims = 64;
+	int dims = 64;
 	float *perlin_data = new float[dims * dims];
 	float scale = (1.0f / dims) * 3;
 	int octaves = 26;
@@ -52,43 +52,8 @@ void Texturing::texture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-
-	/*int imageWidth = 512, imageHeight = 512, imageFormat = 0;
-	unsigned char* data = stbi_load("./textures/reform.jpg",
-		&imageWidth, &imageHeight, &imageFormat, STBI_default);
-
-	glGenTextures(1, &m_texture);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	stbi_image_free(data);*/
-
-	//data = stbi_load("./textures/lightening.png",
-	//	&imageWidth, &imageHeight, &imageFormat, STBI_default);
-
-	//glGenTextures(1, &m_texture2);
-	//glBindTexture(GL_TEXTURE_2D, m_texture2);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	//stbi_image_free(data);
-
-	//// load normal map
-	//data = stbi_load("./textures/heart.png",
-	//	&imageWidth, &imageHeight, &imageFormat, STBI_default);
-
-	//glGenTextures(1, &m_normalmap);
-	//glBindTexture(GL_TEXTURE_2D, m_normalmap);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	//stbi_image_free(data);
 }
 
 
@@ -96,60 +61,39 @@ void Texturing::texture()
 bool Texturing::generateGrid()
 {
 	texture();
-	/*struct Vertex {
-		float x, y, z, w;
-		float nx, ny, nz, nw;
-		float tx, ty, tz, tw;
-		float s, t;
-	};*/
-
-	/*Vertex vertexData[] = {
-		{ -5, 0, 5, 1,
-		0, 1, 0, 0,
-		1, 0, 0, 0,
-		0, 1 },
-
-
-		{ 5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1 },
-		{ 5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0 },
-		{ -5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 },
-	};
-	unsigned int indexData[] = {
-		0, 1, 2,
-		2, 3, 0,
-	};*/
-	unsigned int vrow = 8;
-	unsigned int vcol = 8;
-	m_vertNum = vrow * vcol;
+	
+	 int vrow = 8; //number of rows desired.
+	 int vcol = 8; //number of columns desired.
+	 m_vertNum = vrow * vcol; //number of vertices
 		Vertex* vertexData = new Vertex[m_vertNum];
 		int p = 0;
-		for (float row = 0; row < vrow; ++row)
+		for (int row = 0; row < vrow; ++row)
 		{
-			for (float column = 0; column < vcol; ++column)
+			for (int column = 0; column < vcol; ++column)
 			{
 				//x  y   z  w  u  v
-				vertexData[p].position = vec4(column - vcol * 10, 0, row - vrow * 10, 1);//tl
-				vertexData[p].texcoord = glm::vec2(column * (1.0f / vcol), row * (1.0f / vrow));
-				p++;
-
+				vertexData[row * vcol + column].position = vec4(column - vcol * 0.5f , 0, row - vrow * 0.5f , 1);
+				vertexData[row * vcol + column].texcoord = vec2(column * (1.0f / vcol), row * (1.0f / vrow));
 			}
+
 		}
 		m_count = (vrow - 1) * (vcol - 1) * 6;
 		unsigned int* indexData = new unsigned int[m_count];
 		unsigned int l = 0;
 		for (unsigned int j = 0; j < (vrow-1) * (vcol-1); ++j)
 		{
-			indexData[l] =  l;
+
+			indexData[l] =  j;
 			l++;
-			indexData[l] =  l;
+			indexData[l] =  j + 1;
 			l++;
-			indexData[l] =  l;
+			indexData[l] =  j + 2;
 			l++;
-			indexData[l] =  l - 1;
+			indexData[l] =  j ;
 			l++;
-			indexData[l] =  l - 1;
+			indexData[l] =  j + 2 ;
 			l++;
-			indexData[l] =  l - 5;
+			indexData[l] =  j + 3;
 			l++;
 		}
 		
@@ -288,7 +232,7 @@ void Texturing::draw() {
 	// draw
 	glPointSize(5.0f);
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_POINTS, 64, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_POINTS, m_vertNum, GL_UNSIGNED_INT, nullptr);
 }
 
 void Texturing::inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
