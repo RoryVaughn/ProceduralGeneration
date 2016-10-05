@@ -25,7 +25,7 @@ Texturing::~Texturing() {
 
 void Texturing::texture()
 {
-	int dims = 64;
+	/*int dims = 64;
 	float *perlin_data = new float[dims * dims];
 	float scale = (1.0f / dims) * 3;
 	int octaves = 26;
@@ -52,7 +52,7 @@ void Texturing::texture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
 
 
 	/*int imageWidth = 512, imageHeight = 512, imageFormat = 0;
@@ -118,46 +118,39 @@ bool Texturing::generateGrid()
 		0, 1, 2,
 		2, 3, 0,
 	};*/
-		Vertex* vertexData = new Vertex[64];
-		unsigned int* indexData = new unsigned int[64];
-		vertexData = new Vertex[64];
-		indexData = new unsigned int[64];
+	unsigned int vrow = 8;
+	unsigned int vcol = 8;
+	m_vertNum = vrow * vcol;
+		Vertex* vertexData = new Vertex[m_vertNum];
 		int p = 0;
-		for (float row = 0; row < 4; row++)
+		for (float row = 0; row < vrow; ++row)
 		{
-			for (float column = 0; column < 4; column++)
+			for (float column = 0; column < vcol; ++column)
 			{
 				//x  y   z  w  u  v
-				vertexData[p] = {-5 + (10 * column), 0, 5 + (10 * row), 1, 0 + column, 1 + row };//tl
-				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
+				vertexData[p].position = vec4(column - vcol * 10, 0, row - vrow * 10, 1);//tl
+				vertexData[p].texcoord = glm::vec2(column * (1.0f / vcol), row * (1.0f / vrow));
 				p++;
-				vertexData[p] = { 5 + (10 * column), 0, 5 + (10 * row), 1, 1 + column, 1 + row }; //tr
-				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
-				p++;
-				vertexData[p] = { 5 + (10 * column), 0,-5 + (10 * row), 1, 1 + (10 * column), 0 + row };// br
-				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
-				p++;
-				vertexData[p] = {-5 + (10 * column), 0,-5 + (10 * row), 1, 0 + (10 * column), 0 + row };//bl
-				//std::cout << vertexData[p].x << ", " << vertexData[p].z << std::endl;
-				//std::cout << std::endl;
-				p++;
+
 			}
 		}
+		m_count = (vrow - 1) * (vcol - 1) * 6;
+		unsigned int* indexData = new unsigned int[m_count];
 		unsigned int l = 0;
-		for (unsigned int j = 0; j < 4; j++)
+		for (unsigned int j = 0; j < (vrow-1) * (vcol-1); ++j)
 		{
-			l = j * 6;
-			indexData[l] =  l ;
+			indexData[l] =  l;
 			l++;
-			indexData[l] =  l ;
+			indexData[l] =  l;
 			l++;
-			indexData[l] =  l ;
+			indexData[l] =  l;
 			l++;
-			indexData[l] =  l - 1 ;
+			indexData[l] =  l - 1;
 			l++;
-			indexData[l] =  l - 1 ;
+			indexData[l] =  l - 1;
 			l++;
 			indexData[l] =  l - 5;
+			l++;
 		}
 		
 			
@@ -173,13 +166,13 @@ bool Texturing::generateGrid()
 	//Buffer Vertexes
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 4, vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_vertNum, vertexData, GL_STATIC_DRAW);
 
 
 	//Buffer indicies
 	glGenBuffers(1, &m_IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_count, indexData, GL_STATIC_DRAW);
 
 
 	glEnableVertexAttribArray(0);
