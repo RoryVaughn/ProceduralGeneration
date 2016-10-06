@@ -46,4 +46,5 @@ private:
 	unsigned int m_texture, m_perlin_texture;
 	int m_count;
 	int m_vertNum;
+	int m_indexCount;
 };

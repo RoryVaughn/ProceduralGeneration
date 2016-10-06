@@ -62,41 +62,42 @@ bool Texturing::generateGrid()
 {
 	texture();
 	
-	 int vrow = 8; //number of rows desired.
-	 int vcol = 8; //number of columns desired.
-	 m_vertNum = vrow * vcol; //number of vertices
-		Vertex* vertexData = new Vertex[m_vertNum];
-		int p = 0;
-		for (int row = 0; row < vrow; ++row)
-		{
-			for (int column = 0; column < vcol; ++column)
-			{
-				//x  y   z  w  u  v
-				vertexData[p].position = vec4(column - vcol * 0.5f , 0, row - vrow * 0.5f , 1);
-				vertexData[p].texcoord = vec2(column * (1.0f / vcol), row * (1.0f / vrow));
-				p++;//row * vcol + column
-			}
+	 int vrows = 8; //number of rows desired.
+	 int vcols = 8; //number of columns desired.
+	 unsigned int l = 0; //current index value
 
-		}
-		m_count = (vrow - 1) * (vcol - 1) * 6;
-		unsigned int* indexData = new unsigned int[m_count];
-		unsigned int l = 0;
-		int m = 0;
-		for ( int j = 0; j < (vrow-1) * (vcol-1); ++j)
-		{
-			m = 6 * j;
-			indexData[l++] =  m;
+	 m_indexCount = (vrows - 1) * (vcols - 1) * 6; //full number of indices
+	 m_vertNum = vrows * vcols; //number of vertices
 
-			indexData[l++] =  m + 1;
+	 Vertex* vertexData = new Vertex[m_vertNum]; //Actual Vertex
 
-			indexData[l++] =  m + 2;
-			/////////////////////////////////////////////
-			indexData[l++] =  m + 3;
+	 for (int rows = 0; rows < vrows; ++rows) {
+		 for (int column = 0; column < vcols; ++column) {
+			 vertexData[rows * vcols + column].position = vec4(column - vcols * 0.5f, 0, rows - vrows * 0.5f, 1);
+			 vertexData[rows * vcols + column].texcoord = vec2(column * (1.f / vcols), rows * (1.f / vrows));
+		 }
+	 }
 
-			indexData[l++] =  m + 4 ;
+	 unsigned int* indexData = new unsigned int[m_indexCount]; //Actual Index
 
-			indexData[l++] =  m  + 5;
-		}
+	 for (int rows = 0; rows < (vrows - 1); ++rows) 
+	 {
+		 for (int columns = 0; columns < (vcols - 1); ++columns) 
+		 {
+			 indexData[l] = rows * vcols + columns;
+			 l++;
+			 indexData[l] = (rows + 1) * vcols + columns;
+			 l++;
+			 indexData[l] = (rows + 1) * vcols + (columns + 1);
+			 l++;
+			 indexData[l] = rows * vcols + columns;
+			 l++;
+			 indexData[l] = (rows + 1) * vcols + (columns + 1);
+			 l++;
+			 indexData[l] = rows * vcols + (columns + 1);
+			 l++;
+		 }
+	 }
 
 
 	// create and bind buffers to a vertex array object
@@ -112,7 +113,7 @@ bool Texturing::generateGrid()
 	//Buffer indicies
 	glGenBuffers(1, &m_IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_count, indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_indexCount, indexData, GL_STATIC_DRAW);
 
 
 	glEnableVertexAttribArray(0);
@@ -136,8 +137,8 @@ bool Texturing::CreateShader()
 							uniform sampler2D perlin_texture; \
 							void main() {vec4 pos = position; \
 							frag_texcoord = texcoord; \
-							gl_Position = view_proj * pos; \
-							pos.y += texture(perlin_texture, texcoord).r * 5;}";
+							pos.y += texture(perlin_texture, texcoord).r * 5; \
+							gl_Position = view_proj * pos;}";
 							
 
 	const char* fsSource = "#version 410\n \
@@ -216,7 +217,7 @@ void Texturing::draw() {
 	// draw
 	glPointSize(5.0f);
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, m_vertNum, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
 }
 
 void Texturing::inputCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
