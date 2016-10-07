@@ -27,21 +27,21 @@ void Texturing::texture()
 {
 	int dims = 64;
 	float *perlin_data = new float[dims * dims];
-	float scale = (1.0f / dims) * 3;
-	int octaves = 26;
+	float scale = (1.0f / dims) * 2;
+	int octaves = 28;
 	for (int x = 0; x < dims; ++x)
 	{
 		for (int y = 0; y < dims; ++y)
 		{
-			float amplitude = 1.8f;
-			float persistence = 0.1f;
-			perlin_data[y * x + x] = 0;
+			float amplitude = 0.7f;
+			float persistence = 0.5f;
+			perlin_data[y * dims + x] = 0;
 			for (int o = 0; o < octaves; ++o)
 			{
-				float freq = powf(2, (float)o);
+				float freq = powf(1, (float)o);
 				float perlin_sample =
 					glm::perlin(glm::vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
-				perlin_data[y * x + x] += perlin_sample * amplitude;
+				perlin_data[y * dims + x] += perlin_sample * amplitude;
 				amplitude *= persistence;
 			}
 		}
@@ -136,8 +136,8 @@ bool Texturing::CreateShader()
 							out vec2 frag_texcoord; \
 							uniform sampler2D perlin_texture; \
 							void main() {vec4 pos = position; \
-							frag_texcoord = texcoord; \
 							pos.y += texture(perlin_texture, texcoord).r * 5; \
+							frag_texcoord = texcoord; \
 							gl_Position = view_proj * pos;}";
 							
 
@@ -211,8 +211,8 @@ void Texturing::draw() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
 	// tell the shader where it is
-	int loc2 = glGetUniformLocation(m_programID, "perlin_texture");
-	glUniform1i(loc2, 1);
+	int loc0 = glGetUniformLocation(m_programID, "perlin_texture");
+	glUniform1i(loc0, 0);
 	// bind the light
 	// draw
 	glPointSize(5.0f);
